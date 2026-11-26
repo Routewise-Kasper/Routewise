@@ -1,6 +1,7 @@
 // Routewise 站点配置。换正式域名时只需改 SITE_URL。
 export const SITE_URL = 'https://routewise-guide.pages.dev';
 export const BRAND = 'Routewise';
+export const GSC_VERIFICATION = 'neRAUNrgFvNL7SLCffJxdb0EvY10xfifg8KWtvRh4Eo';
 
 // 短链：/go/<key> → 目标地址。换成带渠道追踪的链接时只改这里。
 export const GO_LINKS = {

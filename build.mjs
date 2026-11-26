@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
 import { marked } from 'marked';
-import { SITE_URL, BRAND, GO_LINKS, LANGS } from './site.config.mjs';
+import { SITE_URL, BRAND, GO_LINKS, LANGS, GSC_VERIFICATION } from './site.config.mjs';
 
 const ROOT = path.dirname(new URL(import.meta.url).pathname);
 const DIST = path.join(ROOT, 'dist');
@@ -99,6 +99,7 @@ function layout({ lang, title, description, url, alt, body, jsonld = [], ogType 
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${canonical}">
+<meta name="google-site-verification" content="${GSC_VERIFICATION}">
 ${hreflang}
 ${noindex ? '<meta name="robots" content="noindex">' : ''}
 <meta property="og:type" content="${ogType}">
