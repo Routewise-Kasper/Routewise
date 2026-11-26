@@ -4,7 +4,7 @@ export const BRAND = 'Routewise';
 
 // 短链：/go/<key> → 目标地址。换成带渠道追踪的链接时只改这里。
 export const GO_LINKS = {
-  hifast: 'https://hifastvpn.com/?utm_source=routewise&utm_medium=referral&utm_campaign=seo',
+  hifast: 'https://getsapp.net/E5hBMG',
 };
 
 export const LANGS = {
