@@ -99,8 +99,8 @@ html:lang(zh-CN) .hero-title{letter-spacing:-.02em;line-height:1.16;font-weight:
 html:lang(zh-CN) .hero-side p{letter-spacing:0;line-height:1.75;font-size:16px}
 .hero-actions{display:flex;flex-wrap:wrap;gap:12px}
 
-.topics{display:grid;grid-template-columns:repeat(var(--n,6),minmax(0,1fr));border:1px solid var(--line);border-right:0}
-.topic{display:flex;align-items:center;gap:10px;height:84px;padding:0 18px;border-right:1px solid var(--line);font-size:17px;letter-spacing:-.03em;position:relative;overflow:hidden;transition:color .25s}
+.topics{display:grid;grid-template-columns:repeat(var(--n,6),auto);overflow-x:auto;scrollbar-width:none;border:1px solid var(--line);border-right:0}
+.topic{display:flex;align-items:center;gap:8px;height:84px;padding:0 14px;white-space:nowrap;border-right:1px solid var(--line);font-size:17px;letter-spacing:-.03em;position:relative;overflow:hidden;transition:color .25s}
 .topic::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,var(--line-2) 1px,transparent 1.2px) 0 0/10px 10px;opacity:0;transition:opacity .3s}
 .topic:hover::before{opacity:1}
 .topic>*{position:relative}
