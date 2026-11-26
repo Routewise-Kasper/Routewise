@@ -5,8 +5,10 @@ Routewise 是一个中英双语的网络使用指南站，静态生成，推送�
 
 ## 目录
 
-- `content/posts/zh/*.md`：简体中文文章，网址 `/guides/<slug>/`
-- `content/posts/en/*.md`：英文文章，网址 `/en/guides/<slug>/`
+- `content/posts/zh/*.md`：简体中文文章，网址 `/<section>/<slug>/`
+- `content/posts/en/*.md`：英文文章，网址 `/en/<section>/<slug>/`
+- 两个版块：`section: news`（时事与科技新闻，分类 internet / ai / security / deals）和 `section: guides`（指南，分类 basics / howto / troubleshooting / privacy / travel）
+- `public/images/*.jpg`：文章配图，1600×900，抽象、科技感、冷色调（深海军蓝 / 石板蓝 / 银白），无文字无 logo
 - `content/pages/{zh,en}/`：关于、合作披露等固定页（不要改动，除非被要求）
 - `seo/facts.md`：产品事实库，写到 Hi快 时**只能**用这里的信息
 - `seo/backlog.md`：选题池；`seo/log.md`：发布记录与周报
@@ -21,7 +23,12 @@ title: 标题（中文 ≤ 30 字；英文 ≤ 65 字符，含冒号的英文标
 description: 摘要（中文 60–90 字；英文 140–160 字符）
 date: YYYY-MM-DD
 updated: YYYY-MM-DD   # 只在修订旧文时加
-category: basics | howto | troubleshooting | privacy | travel
+section: news | guides
+category: internet | ai | security | deals（news）或 basics | howto | troubleshooting | privacy | travel（guides）
+image: /images/<文件名>.jpg   # 只能用 public/images 里已有的图；没有合适的就不写，页面会显示占位图
+sources:              # news 必填，至少 1 条可公开访问的原始报道
+  - title: 媒体名 — 标题
+    url: https://...
 key: 与另一语言版本共用的标识（同一主题中英文用相同 key，自动生成 hreflang）
 affiliate: true       # 文中出现 /go/ 链接时必须为 true
 faq:                  # 2–4 条，生成 FAQ 结构化数据
@@ -36,7 +43,10 @@ faq:                  # 2–4 条，生成 FAQ 结构化数据
 
 1. 读 `seo/log.md` 和 `seo/backlog.md`，列出 `content/posts` 已有文章，避免重复选题、避免两篇抢同一关键词。
 2. 选题：用 WebSearch 调研真实搜索需求（搜索联想词、"People also ask"、问答社区的高频问题、竞品指南页的覆盖空白）。优先长尾、问题型、教程/排错型关键词。把新发现的选题补进 `backlog.md`。
-3. 写作：本周发布 **中文 2 篇 + 英文 2 篇**（其中至少 1 组中英同主题，用相同 key）。每篇中文 1500–2500 字，英文 900–1600 词。
+3. 写作：本周发布 **资讯 1 组（中英同主题）+ 指南 1 组（中英同主题）**，共 4 篇。
+   - 资讯：选过去 7 天内与网络、隐私、AI、安全、消费相关的真实新闻，先用 WebSearch/WebFetch 核实，写清发生了什么、为什么重要、读者该怎么做；所有数字和说法都要能在 sources 里找到，指控类内容必须写明“尚未裁决”等状态。中文 1000–1800 字，英文 600–1100 词。
+   - 指南：中文 1500–2500 字，英文 900–1600 词。
+   - 配图：从 public/images 中选最贴合的一张（可与旧文重复），不要生成或下载新图；需要新图时在周报中列出建议的画面描述，由运营补图。
 4. 自检（全部通过才能发布，见下方清单）。不通过就修改，改不好就不发这篇，在周报里写明原因。
 5. 运行 `npm install && node build.mjs`，必须无报错。
 6. 提交并推送到 `main`：提交信息 `content: <本周文章 slug 列表>`。
@@ -61,3 +71,4 @@ faq:                  # 2–4 条，生成 FAQ 结构化数据
 - 不修改 `pages/`、`build.mjs`、`src/style.css`、`site.config.mjs`，除非用户明确要求
 - 不删除已发布文章，不改已发布文章的 slug（会产生死链）
 - 一周发布总数不超过 6 篇
+- 不在资讯里编造引语、数据或未经报道的细节；不对新闻当事方下结论

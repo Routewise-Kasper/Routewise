@@ -2,6 +2,8 @@
 title: "Smart Mode vs. Global Mode: Split Tunneling Explained"
 description: Smart mode sends only the traffic that needs a VPN through it; global mode sends everything. When to use each, the trade-offs, and common myths.
 date: 2026-11-24
+section: guides
+image: /images/smart-vs-global.jpg
 category: basics
 key: smart-vs-global-mode
 faq:

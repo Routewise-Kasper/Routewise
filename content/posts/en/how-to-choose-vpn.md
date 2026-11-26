@@ -2,6 +2,8 @@
 title: "How to Choose a VPN: 6 Things That Actually Matter"
 description: Ignore the slogans. Speed, stability, server coverage, device support, privacy policy and support are what decide your experience. Includes a 10-minute checklist.
 date: 2026-11-20
+section: guides
+image: /images/choose-vpn.jpg
 category: basics
 key: how-to-choose-vpn
 affiliate: true

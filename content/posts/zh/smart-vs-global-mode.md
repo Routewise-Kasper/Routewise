@@ -2,6 +2,8 @@
 title: 智能模式和全局模式有什么区别？一次讲清“分流”
 description: 智能模式只让境外流量走 VPN，全局模式让所有流量都走 VPN。什么时候该用哪个、各自的优缺点和常见误区，一篇讲清。
 date: 2026-11-24
+section: guides
+image: /images/smart-vs-global.jpg
 category: basics
 key: smart-vs-global-mode
 faq:

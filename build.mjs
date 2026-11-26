@@ -3,11 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
 import { marked } from 'marked';
-import { SITE_URL, BRAND, GO_LINKS, LANGS, GSC_VERIFICATION } from './site.config.mjs';
+import { SITE_URL, BRAND, GO_LINKS, LANGS, SECTIONS, GSC_VERIFICATION } from './site.config.mjs';
 
 const ROOT = path.dirname(new URL(import.meta.url).pathname);
 const DIST = path.join(ROOT, 'dist');
 const CONTENT = path.join(ROOT, 'content');
+const PUBLIC = path.join(ROOT, 'public');
 
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
@@ -19,10 +20,14 @@ const write = (rel, html) => {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, html);
 };
-const fmtDate = (d, lang) => new Date(d).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 const iso = (d) => new Date(d).toISOString().slice(0, 10);
+const fmtDate = (d, lang) => new Date(d).toLocaleDateString(LANGS[lang].dateLocale, lang === 'zh'
+  ? { year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'UTC' }
+  : { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+const imgExists = (src) => src && fs.existsSync(path.join(PUBLIC, src));
+const other = (lang) => (lang === 'zh' ? 'en' : 'zh');
 
-// ---------- 读取内容 ----------
+// ---------- 内容 ----------
 function load(dir, lang, kind) {
   const full = path.join(CONTENT, dir);
   if (!fs.existsSync(full)) return [];
@@ -30,26 +35,26 @@ function load(dir, lang, kind) {
     const { data, content } = matter(fs.readFileSync(path.join(full, f), 'utf8'));
     const slug = data.slug || f.replace(/\.md$/, '');
     const L = LANGS[lang];
-    const url = kind === 'post' ? `${L.prefix}/guides/${slug}/` : `${L.prefix}/${slug}/`;
-    const text = content.replace(/[#>*`\-\[\]\(\)!|]/g, '');
-    const minutes = lang === 'zh' ? Math.max(2, Math.round(text.replace(/\s/g, '').length / 450)) : Math.max(2, Math.round(text.split(/\s+/).length / 220));
-    return { ...data, slug, lang, kind, url, body: content, minutes, key: data.key || slug, draft: !!data.draft };
+    const section = data.section || 'guides';
+    const url = kind === 'post' ? `${L.prefix}/${section}/${slug}/` : `${L.prefix}/${slug}/`;
+    const text = content.replace(/[#>*`\-\[\]\(\)!|:]/g, '');
+    const minutes = lang === 'zh' ? Math.max(2, Math.round(text.replace(/\s/g, '').length / 400)) : Math.max(2, Math.round(text.split(/\s+/).length / 220));
+    return { ...data, section, slug, lang, kind, url, body: content, minutes, key: data.key || slug, draft: !!data.draft };
   }).filter((p) => !p.draft);
 }
 
 const posts = {};
 const pages = {};
 for (const lang of Object.keys(LANGS)) {
-  posts[lang] = load(`posts/${lang}`, lang, 'post').sort((a, b) => new Date(b.date) - new Date(a.date));
+  posts[lang] = load(`posts/${lang}`, lang, 'post').sort((a, b) => new Date(b.date) - new Date(a.date) || a.slug.localeCompare(b.slug));
   pages[lang] = load(`pages/${lang}`, lang, 'page');
 }
 const counterpart = (item) => {
-  const other = item.lang === 'zh' ? 'en' : 'zh';
-  const pool = item.kind === 'post' ? posts[other] : pages[other];
+  const pool = item.kind === 'post' ? posts[other(item.lang)] : pages[other(item.lang)];
   return pool.find((p) => p.key === item.key);
 };
 
-// ---------- Markdown 渲染 ----------
+// ---------- Markdown ----------
 function render(md) {
   const headings = [];
   const renderer = new marked.Renderer();
@@ -66,35 +71,157 @@ function render(md) {
     const go = href.startsWith('/go/');
     const rel = go ? ' rel="sponsored nofollow"' : ext ? ' rel="noopener"' : '';
     const target = ext || go ? ' target="_blank"' : '';
-    return `<a href="${esc(href)}"${title ? ` title="${esc(title)}"` : ''}${rel}${target}>${text}</a>`;
+    return `<a href="${esc(href)}"${title ? ` title="${esc(title)}"` : ''}${rel}${target}${go ? ' data-no-transition' : ''}>${text}</a>`;
   };
   renderer.table = function (token) {
     const head = token.header.map((c) => `<th>${this.parser.parseInline(c.tokens)}</th>`).join('');
     const rows = token.rows.map((r) => `<tr>${r.map((c) => `<td>${this.parser.parseInline(c.tokens)}</td>`).join('')}</tr>`).join('');
     return `<div class="table-wrap"><table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
   };
-  // ::: tip / ::: note 区块
-  md = md.replace(/^:::[ \t]*(tip|note|warn)[ \t]*\n([\s\S]*?)\n:::[ \t]*$/gm, (_, type, inner) => `<aside class="callout callout-${type}">\n\n${inner}\n\n</aside>`);
-  const html = marked.parse(md, { renderer, gfm: true });
-  return { html, headings };
+  md = md.replace(/^:::[ \t]*(tip|note|warn)[ \t]*\n([\s\S]*?)\n:::[ \t]*$/gm, (_, type, inner) => `<aside class="callout callout-${type}"><span class="callout-tag">${type.toUpperCase()}</span>\n\n${inner}\n\n</aside>`);
+  return { html: marked.parse(md, { renderer, gfm: true }), headings };
 }
 
-// ---------- 模板 ----------
+// ---------- 组件 ----------
 const CSS = fs.readFileSync(path.join(ROOT, 'src/style.css'), 'utf8');
-const LOGO = `<svg class="logo-mark" viewBox="0 0 28 28" aria-hidden="true"><circle cx="6" cy="22" r="3.2"/><circle cx="22" cy="6" r="3.2"/><path d="M6 22 C 6 12, 22 16, 22 6" fill="none" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+const JS = fs.readFileSync(path.join(ROOT, 'src/site.js'), 'utf8');
+const ARROW = `<svg class="i-arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M5.5 4H12v6.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`;
+const MARK = `<svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 16h26M16 3v26" stroke="currentColor" stroke-width="4"/><path class="mark-x" d="M7 7l18 18" stroke-width="3"/></svg>`;
+const cat = (lang, c) => LANGS[lang].categories[c] || c;
 
-function layout({ lang, title, description, url, alt, body, jsonld = [], ogType = 'website', noindex = false }) {
+function media(p, cls = '') {
+  const eager = /featured-media|post-media/.test(cls);
+  if (imgExists(p.image)) return `<div class="media ${cls}"><img src="${p.image}" alt="" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" width="1600" height="900"></div>`;
+  return `<div class="media media-ph ${cls}" aria-hidden="true"><span>${esc(cat(p.lang, p.category))}</span></div>`;
+}
+
+function meta(p) {
+  return `<div class="meta-row"><span class="tag">${esc(cat(p.lang, p.category))}</span><span class="date"><i>//</i> ${fmtDate(p.date, p.lang)}</span></div>`;
+}
+
+function card(p) {
+  const L = LANGS[p.lang];
+  return `<article class="card reveal" data-cat="${p.category}">
+  <a href="${p.url}" class="card-link">
+    ${media(p)}
+    <div class="card-body">
+      ${meta(p)}
+      <div class="card-text"><h3>${esc(p.title)}</h3><p>${esc(p.description)}</p></div>
+      <div class="card-foot">${ARROW}<span>${L.view.toUpperCase()}</span></div>
+    </div>
+  </a>
+</article>`;
+}
+
+function featured(p) {
+  const L = LANGS[p.lang];
+  return `<article class="featured reveal">
+  <a href="${p.url}" class="featured-link">
+    <div class="featured-body">
+      ${meta(p)}
+      <div class="card-text"><h2>${esc(p.title)}</h2><p>${esc(p.description)}</p></div>
+      <div class="card-foot">${ARROW}<span>${L.view.toUpperCase()}</span></div>
+    </div>
+    ${media(p, 'featured-media')}
+  </a>
+</article>`;
+}
+
+function filterTabs(list, lang) {
+  const cats = [...new Set(list.map((p) => p.category))];
+  if (cats.length < 2) return '';
+  return `<div class="filters reveal" role="tablist">
+  <button class="filter is-active" data-filter="all" role="tab" aria-selected="true">${LANGS[lang].all}</button>
+  ${cats.map((c) => `<button class="filter" data-filter="${c}" role="tab" aria-selected="false">${esc(cat(lang, c))}</button>`).join('')}
+</div>`;
+}
+
+function sectionLabel(n, total, label) {
+  return `<div class="s-label reveal"><span class="s-num">[N.${String(n).padStart(2, '0')}/<i>${String(total).padStart(2, '0')}</i>]</span><span class="s-dash"></span><span class="s-name" data-scramble>&gt; ${label}</span><span class="s-line"></span></div>`;
+}
+
+function marquee(lang) {
+  const items = LANGS[lang].marquee.map((t) => `<span>${t}</span>`).join('');
+  const row = `<div class="marquee-row">${items.repeat(4)}</div>`;
+  return `<div class="marquee" aria-hidden="true"><div class="marquee-track">${row}${row}</div></div>`;
+}
+
+function cta(lang) {
+  const L = LANGS[lang];
+  return `<section class="cta-band grid-dark">
+  <div class="wrap">
+    <div class="cta-box reveal">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <span class="tag">${L.ctaTag}</span>
+      <h2>${esc(L.ctaA)}<br><span class="pixel">[<span class="type" data-words="${L.ctaWords.join(',')}">${L.ctaWords[0]}</span><b class="caret"></b>]</span><br>${esc(L.ctaB)}</h2>
+      <a class="btn btn-dark" href="/go/hifast" rel="sponsored nofollow" target="_blank" data-no-transition><i class="sq"></i>${esc(L.ctaButton)}</a>
+      <p class="cta-note">${esc(L.ctaNote)} · <a href="${L.prefix}/disclosure/">${L.disclosure}</a></p>
+    </div>
+  </div>
+</section>`;
+}
+
+function header(lang, active, altUrl) {
+  const L = LANGS[lang];
+  const pre = L.prefix;
+  const count = (s) => posts[lang].filter((p) => p.section === s).length;
+  const item = (key, href, badge) => {
+    const on = active === key;
+    const label = L.nav[key].toUpperCase();
+    return `<a href="${href}" class="nav-item${on ? ' is-active' : ''}"${on ? ' aria-current="page"' : ''}>${on ? `&lt;${label}&gt;` : label}${badge ? `<sup>${badge}</sup>` : ''}</a>`;
+  };
+  return `<header class="site-header">
+  <div class="wrap header-inner">
+    <nav class="nav" aria-label="Primary">
+      ${item('home', `${pre}/`)}${item('news', `${pre}/news/`, count('news'))}${item('guides', `${pre}/guides/`, count('guides'))}${item('about', `${pre}/about/`)}
+    </nav>
+    <a class="btn-lang" href="${altUrl}" hreflang="${LANGS[other(lang)].code}">${ARROW}<span>${L.switchLang}</span></a>
+  </div>
+</header>`;
+}
+
+function footer(lang) {
+  const L = LANGS[lang];
+  const pre = L.prefix;
+  const cats = [...new Set(posts[lang].map((p) => p.category))];
+  return `${marquee(lang)}
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-main">
+        <h3><span class="accent">@</span> ${esc(L.footerTitle)}</h3>
+        <p>${esc(L.footerText)}</p>
+        <a class="btn btn-dark btn-sm" href="${pre}/rss.xml" data-no-transition><i class="sq"></i>${esc(L.footerRss)}</a>
+        <a href="${pre}/" class="wordmark" aria-label="${BRAND}">${MARK}<span>${BRAND}</span></a>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h4>${esc(L.footerPages)}</h4>
+          <a href="${pre}/">${esc(L.nav.home)}</a><a href="${pre}/news/">${esc(L.nav.news)}</a><a href="${pre}/guides/">${esc(L.nav.guides)}</a><a href="${pre}/about/">${esc(L.nav.about)}</a><a href="${pre}/disclosure/">${esc(L.disclosure)}</a>
+        </div>
+        <div class="footer-col">
+          <h4>${esc(L.footerTopics)}</h4>
+          ${cats.map((c) => { const s = posts[lang].find((p) => p.category === c).section; return `<a href="${pre}/${s}/#${c}">${esc(cat(lang, c))}</a>`; }).join('')}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap footer-base"><span>© ${new Date().getUTCFullYear()} ${BRAND}</span><span>${esc(L.footerTeam)}</span></div>
+</footer>`;
+}
+
+function layout({ lang, title, description, url, alt, body, active = '', jsonld = [], ogType = 'website', ogImage, noindex = false }) {
   const L = LANGS[lang];
   const canonical = SITE_URL + url;
+  const altUrl = alt ? alt.url : (lang === 'zh' ? '/en/' : '/');
   const hreflang = alt
     ? `<link rel="alternate" hreflang="${L.code}" href="${canonical}"><link rel="alternate" hreflang="${LANGS[alt.lang].code}" href="${SITE_URL + alt.url}"><link rel="alternate" hreflang="x-default" href="${SITE_URL + (lang === 'zh' ? url : alt.url)}">`
     : '';
-  const switchHref = alt ? alt.url : (lang === 'zh' ? '/en/' : '/');
-  const pre = L.prefix;
   return `<!doctype html>
 <html lang="${L.code}">
 <head>
 <meta charset="utf-8">
+<script>document.documentElement.classList.add('js');if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('reduced')</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
@@ -107,173 +234,174 @@ ${noindex ? '<meta name="robots" content="noindex">' : ''}
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${canonical}">
 <meta property="og:site_name" content="${BRAND}">
-<meta property="og:image" content="${SITE_URL}/og.png">
+<meta property="og:image" content="${SITE_URL}${ogImage && imgExists(ogImage) ? ogImage : '/og.png'}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#F4F1EA" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#111311" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="alternate" type="application/rss+xml" title="${BRAND}" href="${SITE_URL}${pre}/rss.xml">
+<link rel="preload" href="/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/GeistMono-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="alternate" type="application/rss+xml" title="${BRAND}" href="${SITE_URL}${L.prefix}/rss.xml">
 <style>${CSS}</style>
 ${jsonld.map((j) => `<script type="application/ld+json">${JSON.stringify(j)}</script>`).join('\n')}
 </head>
 <body>
-<header class="site-header">
-  <div class="wrap header-inner">
-    <a class="logo" href="${pre}/" aria-label="${BRAND}">${LOGO}<span>${BRAND}</span></a>
-    <nav class="nav">
-      <a href="${pre}/guides/">${L.nav.guides}</a>
-      <a href="${pre}/about/">${L.nav.about}</a>
-      <a class="lang" href="${switchHref}" hreflang="${lang === 'zh' ? 'en' : 'zh-CN'}">${L.switchLang}</a>
-    </nav>
-  </div>
-</header>
+<div class="pixel-veil" aria-hidden="true"></div>
+${header(lang, active, altUrl)}
 <main>${body}</main>
-<footer class="site-footer">
-  <div class="wrap footer-inner">
-    <div>
-      <a class="logo" href="${pre}/">${LOGO}<span>${BRAND}</span></a>
-      <p class="muted">${L.footerAbout}</p>
-    </div>
-    <nav class="footer-nav">
-      <a href="${pre}/guides/">${L.nav.guides}</a>
-      <a href="${pre}/about/">${L.nav.about}</a>
-      <a href="${pre}/disclosure/">${L.nav.disclosure}</a>
-      <a href="${pre}/rss.xml">RSS</a>
-    </nav>
-  </div>
-  <div class="wrap footer-base muted">© ${new Date().getUTCFullYear()} ${BRAND} · ${L.footerTeam}</div>
-</footer>
+${footer(lang)}
+<script>${JS}</script>
 </body>
 </html>`;
 }
 
-const catLabel = (lang, c) => LANGS[lang].categories[c] || c;
-
-function card(p, i) {
-  const L = LANGS[p.lang];
-  return `<li class="card">
-  <a href="${p.url}">
-    <span class="card-index">${String(i + 1).padStart(2, '0')}</span>
-    <div class="card-main">
-      <span class="eyebrow">${esc(catLabel(p.lang, p.category))}</span>
-      <h3>${esc(p.title)}</h3>
-      <p>${esc(p.description)}</p>
-    </div>
-    <span class="card-meta">${p.minutes} ${L.minRead}<svg viewBox="0 0 24 24" class="arrow" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-  </a>
-</li>`;
-}
-
-// ---------- 页面生成 ----------
+// ---------- 生成 ----------
 const sitemap = [];
 const addSitemap = (url, lastmod, alt) => sitemap.push({ url, lastmod, alt });
 
 for (const lang of Object.keys(LANGS)) {
   const L = LANGS[lang];
   const pre = L.prefix;
-  const list = posts[lang];
-  const other = lang === 'zh' ? 'en' : 'zh';
+  const o = other(lang);
+  const all = posts[lang];
+  const bySection = (s) => all.filter((p) => p.section === s);
 
   // 首页
-  const cats = [...new Set(list.map((p) => p.category))];
+  const news = bySection('news');
+  const guides = bySection('guides');
   const home = `
-<section class="hero">
-  <div class="wrap">
-    <svg class="hero-route" viewBox="0 0 1200 260" preserveAspectRatio="none" aria-hidden="true"><path d="M-20 220 C 220 220, 300 60, 520 70 S 820 210, 1000 120 S 1180 30, 1240 40"/><circle cx="520" cy="70" r="5"/><circle cx="1000" cy="120" r="5"/></svg>
-    <p class="eyebrow">${BRAND}</p>
-    <h1>${esc(L.tagline)}</h1>
-    <p class="lede">${esc(L.description)}</p>
-    <div class="chips">${cats.map((c) => `<a class="chip" href="${pre}/guides/#${c}">${esc(catLabel(lang, c))}</a>`).join('')}</div>
+<section class="hero-top grid-dark">
+  <div class="wrap hero-top-inner">
+    <a href="${pre}/" class="hero-logo">${MARK}<span>${BRAND}</span><em class="tag tag-dark">v2026.11</em></a>
+    <span class="scroll-hint">${L.scroll} ↓</span>
   </div>
 </section>
+<section class="hero wrap">
+  <h1 class="hero-title reveal">${esc(L.heroA)}<br><span class="pixel">[ <span class="type" data-words="${L.heroWords.join(',')}">${L.heroWords[0]}</span><b class="caret"></b> ]</span><br>${esc(L.heroB)}</h1>
+  <div class="hero-side reveal">
+    <div class="hero-stats"><span><b data-count="${all.length}">${all.length}</b> ${lang === 'zh' ? '篇文章' : 'articles'}</span><i></i><span>${lang === 'zh' ? '每周一更新' : 'New every Monday'}</span></div>
+    <p>${esc(L.heroLede)}</p>
+    <div class="hero-actions">
+      <a class="btn btn-dark" href="${pre}/news/"><i class="sq"></i>${esc(L.readNews)}</a>
+      <a class="btn btn-line" href="${pre}/guides/"><svg viewBox="0 0 16 16" class="i-play" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>${esc(L.browseGuides)}</a>
+    </div>
+  </div>
+</section>
+<section class="wrap reveal"><div class="topics" style="--n:${Object.keys(L.categories).filter((c) => all.some((p) => p.category === c)).length}">
+  ${Object.keys(L.categories).filter((c) => all.some((p) => p.category === c)).map((c) => { const s = all.find((p) => p.category === c).section; return `<a class="topic" href="${pre}/${s}/#${c}"><span class="topic-n">${String(all.filter((p) => p.category === c).length).padStart(2, '0')}</span><span>${esc(cat(lang, c))}</span>${ARROW}</a>`; }).join('')}
+</div></section>
 <section class="wrap section">
-  <div class="section-head"><h2>${L.latest}</h2><a href="${pre}/guides/" class="link-arrow">${L.allGuides} →</a></div>
-  <ol class="cards">${list.slice(0, 8).map(card).join('')}</ol>
-</section>`;
+  ${sectionLabel(1, 2, L.sections.news.label)}
+  <div class="section-head reveal"><h2 class="slash-title"><i>/</i> ${esc(L.sections.news.heading)} <i>/</i></h2><a class="btn btn-dark" href="${pre}/news/"><i class="sq"></i>${esc(L.all)}</a></div>
+  ${news[0] ? featured(news[0]) : ''}
+  <div class="cards">${news.slice(1, 4).map(card).join('')}</div>
+</section>
+<section class="wrap section">
+  ${sectionLabel(2, 2, L.sections.guides.label)}
+  <div class="section-head reveal"><h2 class="slash-title"><i>/</i> ${esc(L.sections.guides.heading)} <i>/</i></h2><a class="btn btn-dark" href="${pre}/guides/"><i class="sq"></i>${esc(L.all)}</a></div>
+  <div class="cards">${guides.slice(0, 6).map(card).join('')}</div>
+</section>
+${cta(lang)}`;
   write(`${pre}/index.html`, layout({
-    lang, title: `${BRAND} — ${L.tagline}`, description: L.description, url: `${pre}/`,
-    alt: { lang: other, url: `${LANGS[other].prefix}/` }, body: home,
+    lang, active: 'home', title: `${BRAND} — ${L.heroA}${L.heroB}`, description: L.description, url: `${pre}/`,
+    alt: { lang: o, url: `${LANGS[o].prefix}/` }, body: home,
     jsonld: [{ '@context': 'https://schema.org', '@type': 'WebSite', name: BRAND, url: SITE_URL + `${pre}/`, inLanguage: L.code, publisher: { '@type': 'Organization', name: `${BRAND} Team` } }],
   }));
-  addSitemap(`${pre}/`, list[0]?.updated || list[0]?.date, { lang: other, url: `${LANGS[other].prefix}/` });
+  addSitemap(`${pre}/`, all[0]?.date, { lang: o, url: `${LANGS[o].prefix}/` });
 
-  // 全部指南
-  const groups = cats.map((c) => `<section class="group" id="${c}"><h2>${esc(catLabel(lang, c))}</h2><ol class="cards">${list.filter((p) => p.category === c).map(card).join('')}</ol></section>`).join('');
-  write(`${pre}/guides/index.html`, layout({
-    lang, title: `${L.allGuides} · ${BRAND}`, description: L.description, url: `${pre}/guides/`,
-    alt: { lang: other, url: `${LANGS[other].prefix}/guides/` },
-    body: `<section class="wrap page-head"><p class="eyebrow">${BRAND}</p><h1>${L.allGuides}</h1></section><div class="wrap section">${groups}</div>`,
-  }));
-  addSitemap(`${pre}/guides/`, list[0]?.updated || list[0]?.date, { lang: other, url: `${LANGS[other].prefix}/guides/` });
+  // 版块列表页
+  for (const s of SECTIONS) {
+    const list = bySection(s);
+    if (!list.length) continue;
+    const S = L.sections[s];
+    const body = `
+<section class="page-hero grid-light">
+  <div class="wrap"><h1 class="reveal">${esc(S.title)}</h1><p class="page-intro reveal">${esc(S.intro)}</p></div>
+</section>
+<section class="wrap section section-tight">
+  ${featured(list[0])}
+  ${filterTabs(list, lang)}
+  <div class="cards" data-filterable>${list.slice(1).map(card).join('')}</div>
+</section>
+${cta(lang)}`;
+    write(`${pre}/${s}/index.html`, layout({
+      lang, active: s, title: `${S.title} · ${BRAND}`, description: S.intro, url: `${pre}/${s}/`,
+      alt: { lang: o, url: `${LANGS[o].prefix}/${s}/` }, body,
+      jsonld: [{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: S.title, url: SITE_URL + `${pre}/${s}/`, inLanguage: L.code }],
+    }));
+    addSitemap(`${pre}/${s}/`, list[0].date, { lang: o, url: `${LANGS[o].prefix}/${s}/` });
+  }
 
   // 文章
-  for (const p of list) {
+  for (const p of all) {
     const { html, headings } = render(p.body);
     const alt = counterpart(p);
-    const related = list.filter((x) => x !== p && x.category === p.category).concat(list.filter((x) => x !== p && x.category !== p.category)).slice(0, 3);
-    const toc = headings.length > 2 ? `<nav class="toc"><p class="eyebrow">${L.toc}</p><ol>${headings.map((h) => `<li><a href="#${h.id}">${esc(h.text)}</a></li>`).join('')}</ol></nav>` : '';
-    const faq = Array.isArray(p.faq) && p.faq.length ? `<section class="faq"><h2 id="faq">${L.faq}</h2>${p.faq.map((f) => `<details><summary>${esc(f.q)}</summary><div>${marked.parse(f.a)}</div></details>`).join('')}</section>` : '';
-    const disclosure = p.affiliate ? `<p class="disclosure">${L.disclosureNote} <a href="${pre}/disclosure/">${L.disclosureMore}</a></p>` : '';
+    const sameSection = all.filter((x) => x !== p && x.section === p.section);
+    const related = sameSection.filter((x) => x.category === p.category).concat(sameSection.filter((x) => x.category !== p.category)).concat(all.filter((x) => x !== p && x.section !== p.section)).slice(0, 3);
+    const newest = all.find((x) => x !== p);
+    const toc = headings.length > 2 ? `<nav class="toc"><p class="side-label">${L.toc}</p><ol>${headings.map((h, i) => `<li><a href="#${h.id}"><span>${String(i + 1).padStart(2, '0')}</span>${esc(h.text)}</a></li>`).join('')}</ol></nav>` : '';
+    const side = `${toc}${newest ? `<div class="side-newest"><p class="side-label">${L.newest}</p><a href="${newest.url}" class="mini">${media(newest)}${meta(newest)}<h4>${esc(newest.title)}</h4></a></div>` : ''}`;
+    const faq = Array.isArray(p.faq) && p.faq.length ? `<section class="faq"><h2 id="faq">${L.faq}</h2>${p.faq.map((f, i) => `<details${i === 0 ? ' open' : ''}><summary><span class="faq-n">${String(i + 1).padStart(2, '0')}</span>${esc(f.q)}<i></i></summary><div>${marked.parse(f.a)}</div></details>`).join('')}</section>` : '';
+    const sources = Array.isArray(p.sources) && p.sources.length ? `<section class="sources"><p class="side-label">${L.sources}</p><ol>${p.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener" data-no-transition>${esc(s.title)}${ARROW}</a></li>`).join('')}</ol></section>` : '';
+    const disclosure = p.affiliate ? `<p class="disclosure">${L.disclosureNote} <a href="${L.prefix}/disclosure/">${L.disclosureMore}</a></p>` : '';
     const body = `
-<article class="article">
-  <header class="wrap article-head">
-    <a class="eyebrow" href="${pre}/guides/#${p.category}">${esc(catLabel(lang, p.category))}</a>
-    <h1>${esc(p.title)}</h1>
-    <p class="lede">${esc(p.description)}</p>
-    <p class="meta muted"><span>${BRAND} Team</span><span>${L.updated} <time datetime="${iso(p.updated || p.date)}">${fmtDate(p.updated || p.date, lang)}</time></span><span>${p.minutes} ${L.minRead}</span></p>
+<article class="post">
+  <header class="wrap post-head">
+    <a class="back" href="${pre}/${p.section}/" aria-label="${L.back}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></a>
+    <div class="post-meta reveal"><span class="tag">${esc(cat(lang, p.category))}</span><span class="date"><i>//</i> ${fmtDate(p.date, lang)}</span><span class="date"><i>//</i> ${p.minutes} ${L.minRead}</span></div>
+    <h1 class="reveal">${esc(p.title)}</h1>
+    <p class="post-lede reveal">${esc(p.description)}</p>
   </header>
-  <div class="wrap article-grid">
-    <aside class="article-side">${toc}</aside>
-    <div class="prose">${disclosure}${html}${faq}</div>
-  </div>
+  <div class="wrap">${media(p, 'post-media reveal')}</div>
+  <div class="post-grid-wrap"><div class="wrap post-grid">
+    <aside class="post-side">${side}</aside>
+    <div class="post-body"><div class="prose">${disclosure}${html}</div>${sources}${faq}</div>
+  </div></div>
 </article>
-<section class="wrap section related"><div class="section-head"><h2>${L.related}</h2></div><ol class="cards">${related.map(card).join('')}</ol></section>`;
+<section class="wrap section">
+  <div class="section-head reveal"><h2 class="slash-title"><i>/</i> ${esc(L.related)} <i>/</i></h2></div>
+  <div class="cards">${related.map(card).join('')}</div>
+</section>
+${cta(lang)}`;
     const jsonld = [
-      { '@context': 'https://schema.org', '@type': 'Article', headline: p.title, description: p.description, datePublished: iso(p.date), dateModified: iso(p.updated || p.date), inLanguage: L.code, mainEntityOfPage: SITE_URL + p.url, author: { '@type': 'Organization', name: `${BRAND} Team`, url: SITE_URL + `${pre}/about/` }, publisher: { '@type': 'Organization', name: BRAND, logo: { '@type': 'ImageObject', url: `${SITE_URL}/favicon.svg` } } },
+      { '@context': 'https://schema.org', '@type': p.section === 'news' ? 'NewsArticle' : 'Article', headline: p.title, description: p.description, datePublished: iso(p.date), dateModified: iso(p.updated || p.date), inLanguage: L.code, mainEntityOfPage: SITE_URL + p.url, ...(imgExists(p.image) ? { image: SITE_URL + p.image } : {}), author: { '@type': 'Organization', name: `${BRAND} Team`, url: SITE_URL + `${pre}/about/` }, publisher: { '@type': 'Organization', name: BRAND, logo: { '@type': 'ImageObject', url: `${SITE_URL}/favicon.svg` } } },
       { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
         { '@type': 'ListItem', position: 1, name: BRAND, item: SITE_URL + `${pre}/` },
-        { '@type': 'ListItem', position: 2, name: catLabel(lang, p.category), item: SITE_URL + `${pre}/guides/` },
+        { '@type': 'ListItem', position: 2, name: L.sections[p.section].title, item: SITE_URL + `${pre}/${p.section}/` },
         { '@type': 'ListItem', position: 3, name: p.title, item: SITE_URL + p.url },
       ] },
     ];
     if (Array.isArray(p.faq) && p.faq.length) jsonld.push({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: p.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) });
-    write(`${p.url}index.html`, layout({ lang, title: `${p.title} · ${BRAND}`, description: p.description, url: p.url, alt, body, jsonld, ogType: 'article' }));
+    write(`${p.url}index.html`, layout({ lang, active: p.section, title: `${p.title} · ${BRAND}`, description: p.description, url: p.url, alt, body, jsonld, ogType: 'article', ogImage: p.image }));
     addSitemap(p.url, p.updated || p.date, alt);
   }
 
-  // 独立页面
+  // 固定页
   for (const p of pages[lang]) {
     const { html } = render(p.body);
     const alt = counterpart(p);
-    write(`${p.url}index.html`, layout({ lang, title: `${p.title} · ${BRAND}`, description: p.description, url: p.url, alt,
-      body: `<section class="wrap page-head"><p class="eyebrow">${BRAND}</p><h1>${esc(p.title)}</h1></section><div class="wrap"><div class="prose prose-page">${html}</div></div>` }));
+    write(`${p.url}index.html`, layout({ lang, active: p.slug === 'about' ? 'about' : '', title: `${p.title} · ${BRAND}`, description: p.description, url: p.url, alt,
+      body: `<section class="page-hero grid-light"><div class="wrap"><h1 class="reveal">${esc(p.title)}</h1><p class="page-intro reveal">${esc(p.description)}</p></div></section><div class="post-grid-wrap"><div class="wrap post-grid"><aside class="post-side"><p class="side-label">${BRAND}</p></aside><div class="post-body"><div class="prose">${html}</div></div></div></div>${cta(lang)}` }));
     addSitemap(p.url, p.updated || p.date, alt);
   }
 
   // RSS
-  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+  write(`${pre}/rss.xml`, `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel><title>${BRAND}</title><link>${SITE_URL}${pre}/</link><description>${esc(L.description)}</description><language>${L.code}</language>
-${list.map((p) => `<item><title>${esc(p.title)}</title><link>${SITE_URL}${p.url}</link><guid>${SITE_URL}${p.url}</guid><pubDate>${new Date(p.date).toUTCString()}</pubDate><description>${esc(p.description)}</description></item>`).join('\n')}
-</channel></rss>`;
-  write(`${pre}/rss.xml`, rss);
+${all.map((p) => `<item><title>${esc(p.title)}</title><link>${SITE_URL}${p.url}</link><guid>${SITE_URL}${p.url}</guid><pubDate>${new Date(p.date).toUTCString()}</pubDate><category>${esc(cat(lang, p.category))}</category><description>${esc(p.description)}</description></item>`).join('\n')}
+</channel></rss>`);
 }
 
 // 404
 write('404.html', layout({ lang: 'zh', title: `${LANGS.zh.notFound} · ${BRAND}`, description: LANGS.zh.notFoundBody, url: '/404.html', noindex: true,
-  body: `<section class="wrap page-head notfound"><p class="eyebrow">404</p><h1>${LANGS.zh.notFound}</h1><p class="lede">${LANGS.zh.notFoundBody}</p><p><a class="button" href="/">${LANGS.zh.backHome}</a> <a class="button ghost" href="/en/">${LANGS.en.backHome}</a></p></section>` }));
+  body: `<section class="page-hero grid-light notfound"><div class="wrap"><p class="pixel big404">404</p><h1>${LANGS.zh.notFound}</h1><p class="page-intro">${LANGS.zh.notFoundBody}</p><div class="hero-actions"><a class="btn btn-dark" href="/"><i class="sq"></i>${LANGS.zh.backHome}</a><a class="btn btn-line" href="/en/">${LANGS.en.backHome}</a></div></div></section>` }));
 
-// sitemap
-const sm = `<?xml version="1.0" encoding="UTF-8"?>
+write('_redirects', Object.entries(GO_LINKS).map(([k, v]) => `/go/${k} ${v} 302`).join('\n') + '\n');
+write('_headers', `/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n/fonts/*\n  Cache-Control: public, max-age=31536000, immutable\n/images/*\n  Cache-Control: public, max-age=604800\n/go/*\n  X-Robots-Tag: noindex\n`);
+write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${sitemap.map((s) => `<url><loc>${SITE_URL}${s.url}</loc>${s.lastmod ? `<lastmod>${iso(s.lastmod)}</lastmod>` : ''}${s.alt ? `<xhtml:link rel="alternate" hreflang="${LANGS[s.alt.lang].code}" href="${SITE_URL}${s.alt.url}"/>` : ''}</url>`).join('\n')}
-</urlset>`;
-write('sitemap.xml', sm);
+</urlset>`);
 write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /go/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
-write('_redirects', Object.entries(GO_LINKS).map(([k, v]) => `/go/${k} ${v} 302`).join('\n') + '\n');
-write('_headers', `/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n/go/*\n  X-Robots-Tag: noindex\n`);
 
-// 静态资源
-const pub = path.join(ROOT, 'public');
-if (fs.existsSync(pub)) fs.cpSync(pub, DIST, { recursive: true });
-
+if (fs.existsSync(PUBLIC)) fs.cpSync(PUBLIC, DIST, { recursive: true });
 console.log(`Built ${posts.zh.length} zh + ${posts.en.length} en posts, ${sitemap.length} URLs → dist/`);

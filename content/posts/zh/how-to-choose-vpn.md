@@ -2,6 +2,8 @@
 title: 新手怎么选 VPN：真正值得看的 6 个指标
 description: 不看广告词，只看这 6 项：速度、稳定性、节点覆盖、设备支持、隐私政策和售后。附一张自查表，帮你 10 分钟做出判断。
 date: 2026-11-20
+section: guides
+image: /images/choose-vpn.jpg
 category: basics
 key: how-to-choose-vpn
 affiliate: true

@@ -2,6 +2,8 @@
 title: 免费 VPN 能用吗？免费、试用和付费的真实区别
 description: 免费 VPN 的成本由谁来付？试用和免费有什么不同？从速度、隐私和稳定性三个角度，帮你判断什么时候值得付费。
 date: 2026-11-26
+section: guides
+image: /images/free-vs-paid.jpg
 category: privacy
 key: free-vs-paid-vpn
 affiliate: true

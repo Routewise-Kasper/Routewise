@@ -2,6 +2,8 @@
 title: "Traveling to China? Set Up Your Internet Before You Fly"
 description: Many familiar apps don't work on China's internet. Here's what to install and test before departure, how roaming and local SIMs differ, and a pre-flight checklist.
 date: 2026-11-21
+section: guides
+image: /images/china-travel.jpg
 category: travel
 key: china-travel-internet
 affiliate: true

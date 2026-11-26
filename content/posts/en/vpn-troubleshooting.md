@@ -2,6 +2,8 @@
 title: "VPN Connected but Not Working? A 6-Step Troubleshooting Checklist"
 description: Fix a VPN that won't connect, shows connected with no internet, or runs slowly. Six steps in order, from the quickest checks to contacting support.
 date: 2026-11-23
+section: guides
+image: /images/troubleshooting.jpg
 category: troubleshooting
 key: vpn-troubleshooting
 affiliate: true

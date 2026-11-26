@@ -2,6 +2,8 @@
 title: VPN 连不上或很慢？按这个顺序排查，大多数问题 5 分钟解决
 description: 从网络本身、App 设置到线路选择，按由简到繁的顺序逐项排查 VPN 连不上、连上没网、速度慢等常见问题。
 date: 2026-11-22
+section: guides
+image: /images/troubleshooting.jpg
 category: troubleshooting
 key: vpn-troubleshooting
 affiliate: true
