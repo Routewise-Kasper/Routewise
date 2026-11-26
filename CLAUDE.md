@@ -1,7 +1,7 @@
-# Routewise 运营手册（给自动任务的 Claude 看）
+# NodesNews 运营手册（给自动任务的 Claude 看）
 
-Routewise 是一个中英双语的网络使用指南站，静态生成，推送到 GitHub `main` 后由 Cloudflare Pages 自动构建上线。
-品牌对外统一为 **Routewise / Routewise Team**。站内对 Hi快VPN 的推荐一律通过 `/go/hifast` 短链，并在文章 front matter 设 `affiliate: true`（页面顶部会自动显示合作披露）。
+NodesNews（原名 Routewise）是一个中英双语的网络使用指南站，静态生成，推送到 GitHub `main` 后由 Cloudflare Pages 自动构建上线。
+品牌对外统一为 **NodesNews / NodesNews Team**。站内对 Hi快VPN 的推荐一律通过 `/go/hifast` 短链，并在文章 front matter 设 `affiliate: true`（页面顶部会自动显示合作披露）。
 
 ## 目录
 

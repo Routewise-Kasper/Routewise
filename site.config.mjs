@@ -1,6 +1,6 @@
-// Routewise 站点配置。换正式域名时只需改 SITE_URL。
+// NodesNews 站点配置。换正式域名时只需改 SITE_URL。
 export const SITE_URL = 'https://routewise-guide.pages.dev';
-export const BRAND = 'Routewise';
+export const BRAND = 'NodesNews';
 export const GSC_VERIFICATION = 'neRAUNrgFvNL7SLCffJxdb0EvY10xfifg8KWtvRh4Eo';
 
 // 短链：/go/<key> → 目标地址。
@@ -19,8 +19,8 @@ export const LANGS = {
     heroA: '关于网络的一切，',
     heroB: '讲清楚。',
     heroWords: ['PRIVACY', 'AI', 'SPEED', 'ACCESS', 'SECURITY'],
-    heroLede: 'Routewise 每周追踪与网络、隐私和 AI 有关的科技新闻，并把上网这件事拆成普通人也能照着做的指南。',
-    description: 'Routewise 追踪网络、隐私与 AI 领域的科技新闻，并提供 VPN 选择、连接排错、出行上网等通俗易懂的指南。',
+    heroLede: 'NodesNews 每周追踪与网络、隐私和 AI 有关的科技新闻，并把上网这件事拆成普通人也能照着做的指南。',
+    description: 'NodesNews 追踪网络、隐私与 AI 领域的科技新闻，并提供 VPN 选择、连接排错、出行上网等通俗易懂的指南。',
     nav: { home: '首页', news: '资讯', guides: '指南', tips: '技巧', about: '关于' },
     sections: {
       news: { title: '资讯', label: 'LATEST NEWS', heading: '最新资讯', intro: '与网络、隐私、AI 有关的科技新闻，讲清楚发生了什么、和你有什么关系。' },
@@ -58,7 +58,7 @@ export const LANGS = {
     footerRss: '订阅 RSS',
     footerPages: '页面',
     footerTopics: '分类',
-    footerTeam: '由 Routewise Team 编写与维护',
+    footerTeam: '由 NodesNews Team 编写与维护',
     disclosure: '合作披露',
     switchLang: 'EN',
     notFound: '页面不存在',
@@ -73,8 +73,8 @@ export const LANGS = {
     heroA: 'Everything about the internet,',
     heroB: 'explained plainly.',
     heroWords: ['PRIVACY', 'AI', 'SPEED', 'ACCESS', 'SECURITY'],
-    heroLede: 'Routewise tracks tech news on networks, privacy and AI every week, and turns getting online into guides anyone can follow.',
-    description: 'Routewise covers tech news on networks, privacy and AI, plus plain-language guides to choosing a VPN, fixing connection problems and getting online while traveling.',
+    heroLede: 'NodesNews tracks tech news on networks, privacy and AI every week, and turns getting online into guides anyone can follow.',
+    description: 'NodesNews covers tech news on networks, privacy and AI, plus plain-language guides to choosing a VPN, fixing connection problems and getting online while traveling.',
     nav: { home: 'Home', news: 'News', guides: 'Guides', tips: 'Tips', about: 'About' },
     sections: {
       news: { title: 'News', label: 'LATEST NEWS', heading: 'Latest news', intro: 'Tech news on networks, privacy and AI: what happened, and why it matters to you.' },
@@ -112,7 +112,7 @@ export const LANGS = {
     footerRss: 'Subscribe via RSS',
     footerPages: 'Pages',
     footerTopics: 'Topics',
-    footerTeam: 'Written and maintained by the Routewise Team',
+    footerTeam: 'Written and maintained by the NodesNews Team',
     disclosure: 'Disclosure',
     switchLang: '中',
     notFound: 'Page not found',

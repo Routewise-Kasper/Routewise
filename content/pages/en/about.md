@@ -1,10 +1,10 @@
 ---
-title: About Routewise
-description: Routewise is a plain-language guide to getting online across borders, choosing a VPN, fixing connection problems and staying private.
+title: About NodesNews
+description: NodesNews is a plain-language guide to getting online across borders, choosing a VPN, fixing connection problems and staying private.
 key: about
 ---
 
-Routewise is a plain-language guide to getting online.
+NodesNews is a plain-language guide to getting online.
 
 Search for help with a network problem and you'll often find answers that are outdated or buried in jargon. Our goal is simple: **explain one thing clearly, from start to finish**, so anyone can follow along.
 

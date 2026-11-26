@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Routewise 兜底配图生成器：Gemini 不可用时，用代码生成抽象、科技感的配图。
+"""NodesNews 兜底配图生成器：Gemini 不可用时，用代码生成抽象、科技感的配图。
 
 用法：
     python3 tools/gen_image.py <输出文件.jpg> --style nodes|flow|rings|wave|bars --seed <任意文字> [--tint blue|teal|violet|amber]

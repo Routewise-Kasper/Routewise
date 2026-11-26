@@ -1,10 +1,10 @@
 ---
 title: Disclosure
-description: How Routewise is run, how it earns money, and how recommendations relate to commercial partnerships.
+description: How NodesNews is run, how it earns money, and how recommendations relate to commercial partnerships.
 key: disclosure
 ---
 
-Some Routewise articles contain affiliate links. If you buy a service through one of them, we may earn a commission, at no extra cost to you.
+Some NodesNews articles contain affiliate links. If you buy a service through one of them, we may earn a commission, at no extra cost to you.
 
 ## What this means
 

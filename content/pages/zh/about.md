@@ -1,10 +1,10 @@
 ---
-title: 关于 Routewise
-description: Routewise 是一份写给普通人的网络使用指南，用通俗的话讲清跨境上网、VPN 选择、连接排错与隐私设置。
+title: 关于 NodesNews
+description: NodesNews 是一份写给普通人的网络使用指南，用通俗的话讲清跨境上网、VPN 选择、连接排错与隐私设置。
 key: about
 ---
 
-Routewise 是一份写给普通人的网络使用指南。
+NodesNews 是一份写给普通人的网络使用指南。
 
 很多人遇到网络问题时，搜到的答案要么过时，要么满是术语。我们想做的很简单：**用通俗的话，把一件事从头讲清楚**，让没有技术背景的人也能照着做。
 
