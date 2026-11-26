@@ -416,7 +416,7 @@ write('404.html', layout({ lang: 'zh', title: `${LANGS.zh.notFound} · ${BRAND}`
   body: `<section class="page-hero grid-light notfound"><div class="wrap"><p class="pixel big404">404</p><h1>${LANGS.zh.notFound}</h1><p class="page-intro">${LANGS.zh.notFoundBody}</p><div class="hero-actions"><a class="btn btn-dark" href="/"><i class="sq"></i>${LANGS.zh.backHome}</a><a class="btn btn-line" href="/en/">${LANGS.en.backHome}</a></div></div></section>` }));
 
 write('_redirects', Object.entries(GO_LINKS).map(([k, v]) => `/go/${k} ${v} 302`).join('\n') + '\n');
-write('_headers', `/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n/fonts/*\n  Cache-Control: public, max-age=31536000, immutable\n/images/*\n  Cache-Control: public, max-age=604800\n/go/*\n  X-Robots-Tag: noindex\n`);
+write('_headers', `/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n/fonts/*\n  Cache-Control: public, max-age=31536000, immutable\n/images/*\n  Cache-Control: public, max-age=86400\n/go/*\n  X-Robots-Tag: noindex\n`);
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${sitemap.map((s) => `<url><loc>${SITE_URL}${s.url}</loc>${s.lastmod ? `<lastmod>${iso(s.lastmod)}</lastmod>` : ''}${s.alt ? `<xhtml:link rel="alternate" hreflang="${LANGS[s.alt.lang].code}" href="${SITE_URL}${s.alt.url}"/>` : ''}</url>`).join('\n')}

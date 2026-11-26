@@ -6,7 +6,7 @@ updated: 2026-11-26
 section: guides
 category: troubleshooting
 key: vpn-troubleshooting
-image: /images/troubleshooting.jpg
+image: /images/troubleshooting-fiber.jpg
 affiliate: true
 faq:
   - q: 显示已连接，但网页打不开怎么办？
