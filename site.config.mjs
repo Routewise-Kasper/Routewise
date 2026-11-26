@@ -1,5 +1,5 @@
 // NodesNews 站点配置。换正式域名时只需改 SITE_URL。
-export const SITE_URL = 'https://nodesnews.com';
+export const SITE_URL = 'https://www.nodesnews.com';
 export const BRAND = 'NodesNews';
 export const GSC_VERIFICATION = 'neRAUNrgFvNL7SLCffJxdb0EvY10xfifg8KWtvRh4Eo';
 
