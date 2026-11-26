@@ -8,8 +8,8 @@ export const GO_LINKS = {
   hifast: 'https://getsapp.net/E5hBMG',
 };
 
-// 版块：news = 时事与科技新闻，guides = 指南教程
-export const SECTIONS = ['news', 'guides'];
+// 版块：news = 时事与科技新闻，guides = 指南，tips = 技巧（AI 与网络技巧、热点工具，可提及品牌）
+export const SECTIONS = ['news', 'guides', 'tips'];
 
 export const LANGS = {
   zh: {
@@ -21,14 +21,16 @@ export const LANGS = {
     heroWords: ['PRIVACY', 'AI', 'SPEED', 'ACCESS', 'SECURITY'],
     heroLede: 'Routewise 每周追踪与网络、隐私和 AI 有关的科技新闻，并把上网这件事拆成普通人也能照着做的指南。',
     description: 'Routewise 追踪网络、隐私与 AI 领域的科技新闻，并提供 VPN 选择、连接排错、出行上网等通俗易懂的指南。',
-    nav: { home: '首页', news: '资讯', guides: '指南', about: '关于' },
+    nav: { home: '首页', news: '资讯', guides: '指南', tips: '技巧', about: '关于' },
     sections: {
       news: { title: '资讯', label: 'LATEST NEWS', heading: '最新资讯', intro: '与网络、隐私、AI 有关的科技新闻，讲清楚发生了什么、和你有什么关系。' },
       guides: { title: '指南', label: 'GUIDES', heading: '上网指南', intro: '从选择工具到排查问题，一步步讲清楚。' },
+      tips: { title: '技巧', label: 'TIPS & TRICKS', heading: '技巧', intro: 'AI 工具和网络使用的小技巧，顺手追一追最近的热门产品和玩法。' },
     },
     categories: {
       internet: '网络', ai: 'AI', security: '安全', deals: '消费',
       basics: '入门', howto: '教程', troubleshooting: '排错', privacy: '隐私', travel: '出行',
+      aitips: 'AI 技巧', nettips: '网络技巧', apps: '应用',
     },
     all: '全部',
     view: '阅读',
@@ -73,14 +75,16 @@ export const LANGS = {
     heroWords: ['PRIVACY', 'AI', 'SPEED', 'ACCESS', 'SECURITY'],
     heroLede: 'Routewise tracks tech news on networks, privacy and AI every week, and turns getting online into guides anyone can follow.',
     description: 'Routewise covers tech news on networks, privacy and AI, plus plain-language guides to choosing a VPN, fixing connection problems and getting online while traveling.',
-    nav: { home: 'Home', news: 'News', guides: 'Guides', about: 'About' },
+    nav: { home: 'Home', news: 'News', guides: 'Guides', tips: 'Tips', about: 'About' },
     sections: {
       news: { title: 'News', label: 'LATEST NEWS', heading: 'Latest news', intro: 'Tech news on networks, privacy and AI: what happened, and why it matters to you.' },
       guides: { title: 'Guides', label: 'GUIDES', heading: 'Guides', intro: 'From choosing tools to fixing problems, step by step.' },
+      tips: { title: 'Tips', label: 'TIPS & TRICKS', heading: 'Tips & tricks', intro: 'Practical tricks for AI tools and everyday networking, plus a look at what is trending.' },
     },
     categories: {
       internet: 'Internet', ai: 'AI', security: 'Security', deals: 'Deals',
       basics: 'Basics', howto: 'How-to', troubleshooting: 'Troubleshooting', privacy: 'Privacy', travel: 'Travel',
+      aitips: 'AI tools', nettips: 'Network', apps: 'Apps',
     },
     all: 'All',
     view: 'View',

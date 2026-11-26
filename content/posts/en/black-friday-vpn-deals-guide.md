@@ -41,23 +41,23 @@ VPN.com notes its sample is self-selected visitors to its site, not all VPN user
 
 ## Five checks before you buy
 
-### 1. Look at the total, not the monthly figure
+### Look at the total, not the monthly figure
 
 "From $X a month" is often calculated over two years or more. What you actually pay up front is the number that matters.
 
-### 2. Check renewal terms
+### Check renewal terms
 
 Many intro prices **renew automatically at full price**. Confirm whether it auto-renews, the renewal price, and how to cancel.
 
-### 3. Test speed before you commit
+### Test speed before you commit
 
 If speed matters most, test it during a trial or short plan, on your own network and at your usual times. Our [6-point checklist](/en/guides/how-to-choose-vpn/) shows how.
 
-### 4. Check device and data limits
+### Check device and data limits
 
 Cheaper plans may cap simultaneous devices or data. Make sure it covers everything you own.
 
-### 5. Know what you need it for
+### Know what you need it for
 
 About 20% of survey starters weren't sure how they'd use a VPN. Browsing, streaming, gaming or travel? Your use decides how long a plan makes sense.
 

@@ -16,7 +16,7 @@ faq:
 
 Every VPN ad says it's "fast", "stable" and "secure". Those words don't help you decide. These six checks do.
 
-## 1. Speed, tested on your own network
+## Speed, tested on your own network
 
 Published speeds are a rough guide at best. Test it yourself:
 
@@ -28,19 +28,19 @@ Published speeds are a rough guide at best. Test it yourself:
 Smooth video doesn't guarantee smooth calls. Calls and games care about **latency**, so watch the ping, not just download speed.
 :::
 
-## 2. Stability matters more than peak speed
+## Stability matters more than peak speed
 
 A single fast result means little. What counts is whether it **connects reliably across several days and times**. Watch how quickly it connects, whether it drops mid-use, and how fast it recovers.
 
-## 3. Server coverage: the right places, not the most places
+## Server coverage: the right places, not the most places
 
 You need servers **in the regions you care about**, whether that's for streaming, banking or work tools. Solid coverage across Asia, North America and Europe covers most needs.
 
-## 4. Devices and simultaneous connections
+## Devices and simultaneous connections
 
 Check it supports every device you own (iPhone, Android, Windows, Mac) and **how many can be connected at once**. If you use a phone and a laptop, you need at least two.
 
-## 5. Privacy policy: look for three answers
+## Privacy policy: look for three answers
 
 - Does it log your **browsing activity**?
 - Does it **sell or share** data with third parties?
@@ -48,7 +48,7 @@ Check it supports every device you own (iPhone, Android, Windows, Mac) and **how
 
 If the policy is vague or missing, move on.
 
-## 6. Support: can you reach a person?
+## Support: can you reach a person?
 
 When something breaks, fast support is what gets you back online. Look for in-app live chat and a clear refund policy.
 

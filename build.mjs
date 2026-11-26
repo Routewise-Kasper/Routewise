@@ -49,6 +49,20 @@ for (const lang of Object.keys(LANGS)) {
   posts[lang] = load(`posts/${lang}`, lang, 'post').sort((a, b) => new Date(b.date) - new Date(a.date) || a.slug.localeCompare(b.slug));
   pages[lang] = load(`pages/${lang}`, lang, 'page');
 }
+// 配图唯一性检查：不同主题（key）不能共用同一张图
+{
+  const byImage = new Map();
+  for (const lang of Object.keys(LANGS)) for (const p of posts[lang]) {
+    if (!p.image) continue;
+    if (!byImage.has(p.image)) byImage.set(p.image, new Set());
+    byImage.get(p.image).add(p.key);
+  }
+  const dup = [...byImage].filter(([, keys]) => keys.size > 1);
+  if (dup.length) {
+    console.error('配图重复：' + dup.map(([img, keys]) => `${img} ← ${[...keys].join(', ')}`).join('; '));
+    process.exit(1);
+  }
+}
 const counterpart = (item) => {
   const pool = item.kind === 'post' ? posts[other(item.lang)] : pages[other(item.lang)];
   return pool.find((p) => p.key === item.key);
@@ -173,7 +187,7 @@ function header(lang, active, altUrl) {
   return `<header class="site-header">
   <div class="wrap header-inner">
     <nav class="nav" aria-label="Primary">
-      ${item('home', `${pre}/`)}${item('news', `${pre}/news/`, count('news'))}${item('guides', `${pre}/guides/`, count('guides'))}${item('about', `${pre}/about/`)}
+      ${item('home', `${pre}/`)}${item('news', `${pre}/news/`, count('news'))}${item('guides', `${pre}/guides/`, count('guides'))}${item('tips', `${pre}/tips/`, count('tips'))}${item('about', `${pre}/about/`)}
     </nav>
     <a class="btn-lang" href="${altUrl}" hreflang="${LANGS[other(lang)].code}">${ARROW}<span>${L.switchLang}</span></a>
   </div>
@@ -197,7 +211,7 @@ function footer(lang) {
       <div class="footer-cols">
         <div class="footer-col">
           <h4>${esc(L.footerPages)}</h4>
-          <a href="${pre}/">${esc(L.nav.home)}</a><a href="${pre}/news/">${esc(L.nav.news)}</a><a href="${pre}/guides/">${esc(L.nav.guides)}</a><a href="${pre}/about/">${esc(L.nav.about)}</a><a href="${pre}/disclosure/">${esc(L.disclosure)}</a>
+          <a href="${pre}/">${esc(L.nav.home)}</a><a href="${pre}/news/">${esc(L.nav.news)}</a><a href="${pre}/guides/">${esc(L.nav.guides)}</a><a href="${pre}/tips/">${esc(L.nav.tips)}</a><a href="${pre}/about/">${esc(L.nav.about)}</a><a href="${pre}/disclosure/">${esc(L.disclosure)}</a>
         </div>
         <div class="footer-col">
           <h4>${esc(L.footerTopics)}</h4>
@@ -268,6 +282,7 @@ for (const lang of Object.keys(LANGS)) {
   // 首页
   const news = bySection('news');
   const guides = bySection('guides');
+  const tips = bySection('tips');
   const home = `
 <section class="hero-top grid-dark">
   <div class="wrap hero-top-inner">
@@ -290,16 +305,21 @@ for (const lang of Object.keys(LANGS)) {
   ${Object.keys(L.categories).filter((c) => all.some((p) => p.category === c)).map((c) => { const s = all.find((p) => p.category === c).section; return `<a class="topic" href="${pre}/${s}/#${c}"><span class="topic-n">${String(all.filter((p) => p.category === c).length).padStart(2, '0')}</span><span>${esc(cat(lang, c))}</span>${ARROW}</a>`; }).join('')}
 </div></section>
 <section class="wrap section">
-  ${sectionLabel(1, 2, L.sections.news.label)}
+  ${sectionLabel(1, tips.length ? 3 : 2, L.sections.news.label)}
   <div class="section-head reveal"><h2 class="slash-title"><i>/</i> ${esc(L.sections.news.heading)} <i>/</i></h2><a class="btn btn-dark" href="${pre}/news/"><i class="sq"></i>${esc(L.all)}</a></div>
   ${news[0] ? featured(news[0]) : ''}
   <div class="cards">${news.slice(1, 4).map(card).join('')}</div>
 </section>
 <section class="wrap section">
-  ${sectionLabel(2, 2, L.sections.guides.label)}
+  ${sectionLabel(2, tips.length ? 3 : 2, L.sections.guides.label)}
   <div class="section-head reveal"><h2 class="slash-title"><i>/</i> ${esc(L.sections.guides.heading)} <i>/</i></h2><a class="btn btn-dark" href="${pre}/guides/"><i class="sq"></i>${esc(L.all)}</a></div>
   <div class="cards">${guides.slice(0, 6).map(card).join('')}</div>
 </section>
+${tips.length ? `<section class="wrap section">
+  ${sectionLabel(3, 3, L.sections.tips.label)}
+  <div class="section-head reveal"><h2 class="slash-title"><i>/</i> ${esc(L.sections.tips.heading)} <i>/</i></h2><a class="btn btn-dark" href="${pre}/tips/"><i class="sq"></i>${esc(L.all)}</a></div>
+  <div class="cards">${tips.slice(0, 3).map(card).join('')}</div>
+</section>` : ''}
 ${cta(lang)}`;
   write(`${pre}/index.html`, layout({
     lang, active: 'home', title: `${BRAND} — ${L.heroA}${L.heroB}`, description: L.description, url: `${pre}/`,

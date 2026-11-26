@@ -7,8 +7,10 @@ Routewise 是一个中英双语的网络使用指南站，静态生成，推送�
 
 - `content/posts/zh/*.md`：简体中文文章，网址 `/<section>/<slug>/`
 - `content/posts/en/*.md`：英文文章，网址 `/en/<section>/<slug>/`
-- 两个版块：`section: news`（时事与科技新闻，分类 internet / ai / security / deals）和 `section: guides`（指南，分类 basics / howto / troubleshooting / privacy / travel）
-- `public/images/*.jpg`：文章配图，1600×900，抽象、科技感、冷色调（深海军蓝 / 石板蓝 / 银白），无文字无 logo
+- 三个版块：`section: news`（时事与科技新闻，分类 internet / ai / security / deals）、`section: guides`（指南，分类 basics / howto / troubleshooting / privacy / travel）、`section: tips`（技巧，分类 aitips / nettips / apps；可以追热点、可以提各种品牌和产品）
+- `public/images/*.jpg`：文章配图，16:9，抽象、科技感，整体偏冷色，可少量暖色点缀，与页面和谐；清单与使用规则见 `seo/images.md`
+- `seo/writing/`：去 AI 味写作规范。中文用 `zh-de-ai.md`（含扫描脚本 `scripts/zh_ai_scan.py`），英文用 `en-humanizer.md`
+- `tools/gen_image.py`：没有可用配图时的代码生图兜底
 - `content/pages/{zh,en}/`：关于、合作披露等固定页（不要改动，除非被要求）
 - `seo/facts.md`：产品事实库，写到 Hi快 时**只能**用这里的信息
 - `seo/backlog.md`：选题池；`seo/log.md`：发布记录与周报
@@ -23,9 +25,9 @@ title: 标题（中文 ≤ 30 字；英文 ≤ 65 字符，含冒号的英文标
 description: 摘要（中文 60–90 字；英文 140–160 字符）
 date: YYYY-MM-DD
 updated: YYYY-MM-DD   # 只在修订旧文时加
-section: news | guides
-category: internet | ai | security | deals（news）或 basics | howto | troubleshooting | privacy | travel（guides）
-image: /images/<文件名>.jpg   # 只能用 public/images 里已有的图；没有合适的就不写，页面会显示占位图
+section: news | guides | tips
+category: internet | ai | security | deals（news）；basics | howto | troubleshooting | privacy | travel（guides）；aitips | nettips | apps（tips）
+image: /images/<文件名>.jpg   # 必填，每个主题独有，规则见 seo/images.md
 sources:              # news 必填，至少 1 条可公开访问的原始报道
   - title: 媒体名 — 标题
     url: https://...
@@ -43,10 +45,12 @@ faq:                  # 2–4 条，生成 FAQ 结构化数据
 
 1. 读 `seo/log.md` 和 `seo/backlog.md`，列出 `content/posts` 已有文章，避免重复选题、避免两篇抢同一关键词。
 2. 选题：用 WebSearch 调研真实搜索需求（搜索联想词、"People also ask"、问答社区的高频问题、竞品指南页的覆盖空白）。优先长尾、问题型、教程/排错型关键词。把新发现的选题补进 `backlog.md`。
-3. 写作：本周发布 **资讯 1 组（中英同主题）+ 指南 1 组（中英同主题）**，共 4 篇。
-   - 资讯：选过去 7 天内与网络、隐私、AI、安全、消费相关的真实新闻，先用 WebSearch/WebFetch 核实，写清发生了什么、为什么重要、读者该怎么做；所有数字和说法都要能在 sources 里找到，指控类内容必须写明“尚未裁决”等状态。中文 1000–1800 字，英文 600–1100 词。
-   - 指南：中文 1500–2500 字，英文 900–1600 词。
-   - 配图：从 public/images 中选最贴合的一张（可与旧文重复），不要生成或下载新图；需要新图时在周报中列出建议的画面描述，由运营补图。
+3. 写作：本周发布 **资讯 1 组 + 指南或技巧 1 组（每组中英同主题）**，共 4 篇。指南和技巧按周交替：看 seo/log.md 上周发的是哪个，本周就发另一个。
+   - 篇幅长短穿插：指南写深写透（中文 2500–4000 字，英文 1300–2200 词），由浅入深，先讲清基本概念和原理，再讲操作、取舍和常见误解；资讯中文 900–1600 字、英文 500–1000 词；技巧中文 1200–2200 字、英文 700–1300 词。不要每篇都差不多长。
+   - 资讯：选过去 7 天内与网络、隐私、AI、安全、消费相关的真实新闻，先用 WebSearch/WebFetch 核实，写清发生了什么、为什么重要、读者该怎么做；所有数字和说法都要能在 sources 里找到，指控类内容必须写明“尚未裁决”等状态。
+   - 技巧：AI 工具和网络使用的实用技巧，可以追当周热门产品、新功能，可以点名品牌，但只做中性事实描述，不贬低。
+   - 写完先按 `seo/writing/` 的规范转写去 AI 味：中文按 `zh-de-ai.md` 的改稿模式处理，并运行 `python3 -I seo/writing/scripts/zh_ai_scan.py <文件> --register 科普`，“高”的项逐条处理（front matter 里的 `faq:`、`sources:` 命中属于误报）；英文按 `en-humanizer.md` 过一遍，重点查破折号、“不是 X 而是 Y”、三连排比、空洞收尾。转写时不新增事实、不编造经历和数据。
+   - 配图：按 `seo/images.md` 从未使用的图里选最贴合的一张，并登记使用者；没有未使用的图就用 `tools/gen_image.py` 生成一张再登记。每个主题的配图必须不同，构建会检查。
 4. 自检（全部通过才能发布，见下方清单）。不通过就修改，改不好就不发这篇，在周报里写明原因。
 5. 运行 `npm install && node build.mjs`，必须无报错。
 6. 提交并推送到 `main`：提交信息 `content: <本周文章 slug 列表>`。
@@ -62,9 +66,11 @@ faq:                  # 2–4 条，生成 FAQ 结构化数据
 - [ ] 推荐只出现在文末或自然相关的位置，正文主体对所有读者都有用
 - [ ] 不教授违法用途；涉及法律的内容用审慎措辞并建议读者核实当地法规
 - [ ] 标题含核心关键词；description 写清读者能得到什么；至少 2 个 `##` 小节
-- [ ] 至少 1 条站内链接指向相关旧文（中文用 `/guides/<slug>/`，英文用 `/en/guides/<slug>/`）
-- [ ] 内容原创、有具体步骤或判断标准，不是空泛的概述；去掉明显的 AI 套话
+- [ ] 至少 2 条站内链接指向相关旧文（中文用 `/<section>/<slug>/`，英文用 `/en/<section>/<slug>/`）
+- [ ] 内容原创、有具体步骤或判断标准，不是空泛的概述；概念讲到“为什么”，不只讲“怎么做”
+- [ ] 已按 seo/writing 的规范去 AI 味；中文扫描脚本没有未处理的“高”项；不用序数词当小标题；不编造个人经历、朋友故事或统计数字
 - [ ] 中文正文使用中文引号 “ ”，不用英文直引号
+- [ ] 配图在 seo/images.md 中登记，且未被其他主题使用
 
 ## 不要做的事
 
